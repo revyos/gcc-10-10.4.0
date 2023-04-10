@@ -34,8 +34,10 @@ libgcc/ChangeLog:
  libgcc/config/riscv/riscv-asm.h |  6 ++++++
  2 files changed, 14 insertions(+), 7 deletions(-)
 
---- a/src/libgcc/config/riscv/div.S
-+++ b/src/libgcc/config/riscv/div.S
+Index: gcc-10-10.4.0/src/libgcc/config/riscv/div.S
+===================================================================
+--- gcc-10-10.4.0.orig/src/libgcc/config/riscv/div.S
++++ gcc-10-10.4.0/src/libgcc/config/riscv/div.S
 @@ -40,7 +40,7 @@ FUNC_BEGIN (__udivsi3)
    sll    a0, a0, 32
    sll    a1, a1, 32
@@ -68,13 +70,13 @@ libgcc/ChangeLog:
    move  a0, a1
    jr    t0
  FUNC_END (__umoddi3)
-@@ -109,12 +110,12 @@ FUNC_END (__umoddi3)
-   neg   a0, a0
-   bgez  a1, .L12      /* Compute __udivdi3(-a0, a1), then negate the result.  */
+@@ -111,12 +112,12 @@ FUNC_END (__umoddi3)
+   bgtz  a1, .L12     /* Compute __udivdi3(-a0, a1), then negate the result.  */
+ 
    neg   a1, a1
--  j     __udivdi3     /* Compute __udivdi3(-a0, -a1).  */
-+  j     HIDDEN_JUMPTARGET(__udivdi3)     /* Compute __udivdi3(-a0, -a1).  */
- .L11:                 /* Compute __udivdi3(a0, -a1), then negate the result.  */
+-  j     __udivdi3    /* Compute __udivdi3(-a0, -a1).  */
++  j     HIDDEN_JUMPTARGET(__udivdi3)    /* Compute __udivdi3(-a0, -a1).  */
+ .L11:                /* Compute __udivdi3(a0, -a1), then negate the result.  */
    neg   a1, a1
  .L12:
    move  t0, ra
@@ -83,7 +85,7 @@ libgcc/ChangeLog:
    neg   a0, a0
    jr    t0
  FUNC_END (__divdi3)
-@@ -124,7 +125,7 @@ FUNC_BEGIN (__moddi3)
+@@ -126,7 +127,7 @@ FUNC_BEGIN (__moddi3)
    bltz   a1, .L31
    bltz   a0, .L32
  .L30:
@@ -92,7 +94,7 @@ libgcc/ChangeLog:
    move   a0, a1
    jr     t0
  .L31:
-@@ -132,7 +133,7 @@ FUNC_BEGIN (__moddi3)
+@@ -134,7 +135,7 @@ FUNC_BEGIN (__moddi3)
    bgez   a0, .L30
  .L32:
    neg    a0, a0
@@ -101,8 +103,10 @@ libgcc/ChangeLog:
    neg    a0, a1
    jr     t0
  FUNC_END (__moddi3)
---- a/src/libgcc/config/riscv/riscv-asm.h
-+++ b/src/libgcc/config/riscv/riscv-asm.h
+Index: gcc-10-10.4.0/src/libgcc/config/riscv/riscv-asm.h
+===================================================================
+--- gcc-10-10.4.0.orig/src/libgcc/config/riscv/riscv-asm.h
++++ gcc-10-10.4.0/src/libgcc/config/riscv/riscv-asm.h
 @@ -33,3 +33,9 @@ X:
  #define FUNC_ALIAS(X,Y)		\
  	.globl X;		\
