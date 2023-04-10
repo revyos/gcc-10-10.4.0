@@ -1,0 +1,37 @@
+# DP: Backport PR target/102952, support for -mharden-sls and
+# DP: -mindirect-branch-cs-prefix for x86.
+
+--- a/src/gcc/doc/invoke.texi
++++ b/src/gcc/doc/invoke.texi
+@@ -1368,7 +1368,8 @@ See RS/6000 and PowerPC Options.
+ -mstack-protector-guard-symbol=@var{symbol} @gol
+ -mgeneral-regs-only  -mcall-ms2sysv-xlogues @gol
+ -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
+--mindirect-branch-register}
++-mindirect-branch-register -mharden-sls=@var{choice} @gol
++-mindirect-branch-cs-prefix}
+ 
+ @emph{x86 Windows Options}
+ @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
+@@ -30277,6 +30278,21 @@ not be reachable in the large code model
+ @opindex mindirect-branch-register
+ Force indirect call and jump via register.
+ 
++@item -mharden-sls=@var{choice}
++@opindex mharden-sls
++Generate code to mitigate against straight line speculation (SLS) with
++@var{choice}.  The default is @samp{none} which disables all SLS
++hardening.  @samp{return} enables SLS hardening for function returns.
++@samp{indirect-jmp} enables SLS hardening for indirect jumps.
++@samp{all} enables all SLS hardening.
++
++@item -mindirect-branch-cs-prefix
++@opindex mindirect-branch-cs-prefix
++Add CS prefix to call and jmp to indirect thunk with branch target in
++r8-r15 registers so that the call and jmp instruction length is 6 bytes
++to allow them to be replaced with @samp{lfence; call *%r8-r15} or
++@samp{lfence; jmp *%r8-r15} at run-time.
++
+ @end table
+ 
+ These @samp{-m} switches are supported in addition to the above

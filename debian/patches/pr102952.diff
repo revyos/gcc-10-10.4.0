@@ -1,0 +1,258 @@
+# DP: Backport PR target/102952, support for -mharden-sls and
+# DP: -mindirect-branch-cs-prefix for x86.
+
+--- a/src/gcc/config/i386/i386-opts.h
++++ b/src/gcc/config/i386/i386-opts.h
+@@ -125,4 +125,11 @@ enum instrument_return {
+   instrument_return_nop5
+ };
+ 
++enum harden_sls {
++  harden_sls_none = 0,
++  harden_sls_return = 1 << 0,
++  harden_sls_indirect_jmp = 1 << 1,
++  harden_sls_all = harden_sls_return | harden_sls_indirect_jmp
++};
++
+ #endif
+--- a/src/gcc/config/i386/i386.c
++++ b/src/gcc/config/i386/i386.c
+@@ -5479,6 +5479,8 @@ output_indirect_thunk (unsigned int regn
+     }
+ 
+   fputs ("\tret\n", asm_out_file);
++  if ((ix86_harden_sls & harden_sls_return))
++    fputs ("\tint3\n", asm_out_file);
+ }
+ 
+ /* Output a funtion with a call and return thunk for indirect branch.
+@@ -15433,9 +15435,14 @@ ix86_output_jmp_thunk_or_indirect (const
+ {
+   if (thunk_name != NULL)
+     {
++      if (REX_INT_REGNO_P (regno)
++	  && ix86_indirect_branch_cs_prefix)
++	fprintf (asm_out_file, "\tcs\n");
+       fprintf (asm_out_file, "\tjmp\t");
+       assemble_name (asm_out_file, thunk_name);
+       putc ('\n', asm_out_file);
++      if ((ix86_harden_sls & harden_sls_indirect_jmp))
++	fputs ("\tint3\n", asm_out_file);
+     }
+   else
+     output_indirect_thunk (regno);
+@@ -15484,6 +15491,9 @@ ix86_output_indirect_branch_via_reg (rtx
+     {
+       if (thunk_name != NULL)
+ 	{
++	  if (REX_INT_REGNO_P (regno)
++	      && ix86_indirect_branch_cs_prefix)
++	    fprintf (asm_out_file, "\tcs\n");
+ 	  fprintf (asm_out_file, "\tcall\t");
+ 	  assemble_name (asm_out_file, thunk_name);
+ 	  putc ('\n', asm_out_file);
+@@ -15658,10 +15668,10 @@ ix86_output_indirect_jmp (rtx call_op)
+ 	gcc_unreachable ();
+ 
+       ix86_output_indirect_branch (call_op, "%0", true);
+-      return "";
+     }
+   else
+-    return "%!jmp\t%A0";
++    output_asm_insn ("%!jmp\t%A0", &call_op);
++  return (ix86_harden_sls & harden_sls_indirect_jmp) ? "int3" : "";
+ }
+ 
+ /* Output return instrumentation for current function if needed.  */
+@@ -15729,10 +15739,8 @@ ix86_output_function_return (bool long_p
+       return "";
+     }
+ 
+-  if (!long_p)
+-    return "%!ret";
+-
+-  return "rep%; ret";
++  output_asm_insn (long_p ? "rep%; ret" : "ret", NULL);
++  return (ix86_harden_sls & harden_sls_return) ? "int3" : "";
+ }
+ 
+ /* Output indirect function return.  RET_OP is the function return
+@@ -15827,7 +15835,12 @@ ix86_output_call_insn (rtx_insn *insn, r
+       if (output_indirect_p && !direct_p)
+ 	ix86_output_indirect_branch (call_op, xasm, true);
+       else
+-	output_asm_insn (xasm, &call_op);
++	{
++	  output_asm_insn (xasm, &call_op);
++	  if (!direct_p
++	      && (ix86_harden_sls & harden_sls_indirect_jmp))
++	    return "int3";
++	}
+       return "";
+     }
+ 
+--- a/src/gcc/config/i386/i386.opt
++++ b/src/gcc/config/i386/i386.opt
+@@ -1068,6 +1068,10 @@ Enum(indirect_branch) String(thunk-inlin
+ EnumValue
+ Enum(indirect_branch) String(thunk-extern) Value(indirect_branch_thunk_extern)
+ 
++mindirect-branch-cs-prefix
++Target Var(ix86_indirect_branch_cs_prefix) Init(0)
++Add CS prefix to call and jmp to indirect thunk with branch target in r8-r15 registers.
++
+ mindirect-branch-register
+ Target Report Var(ix86_indirect_branch_register) Init(0)
+ Force indirect call and jump via register.
+@@ -1109,6 +1113,26 @@ mrecord-return
+ Target Report Var(ix86_flag_record_return) Init(0)
+ Generate a __return_loc section pointing to all return instrumentation code.
+ 
++mharden-sls=
++Target RejectNegative Joined Enum(harden_sls) Var(ix86_harden_sls) Init(harden_sls_none)
++Generate code to mitigate against straight line speculation.
++
++Enum
++Name(harden_sls) Type(enum harden_sls)
++Known choices for mitigation against straight line speculation with -mharden-sls=:
++
++EnumValue
++Enum(harden_sls) String(none) Value(harden_sls_none)
++
++EnumValue
++Enum(harden_sls) String(return) Value(harden_sls_return)
++
++EnumValue
++Enum(harden_sls) String(indirect-jmp) Value(harden_sls_indirect_jmp)
++
++EnumValue
++Enum(harden_sls) String(all) Value(harden_sls_all)
++
+ mavx512bf16
+ Target Report Mask(ISA2_AVX512BF16) Var(ix86_isa_flags2) Save
+ Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/harden-sls-1.c
+@@ -0,0 +1,14 @@
++/* { dg-do compile } */
++/* { dg-options "-O2 -mindirect-branch=thunk-extern -mharden-sls=all" } */
++/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
++
++extern void foo (void);
++
++void
++bar (void)
++{
++  foo ();
++}
++
++/* { dg-final { scan-assembler "jmp\[ \t\]+_?foo" } } */
++/* { dg-final { scan-assembler-not {int3} } } */
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/harden-sls-2.c
+@@ -0,0 +1,14 @@
++/* { dg-do compile } */
++/* { dg-options "-O2 -mindirect-branch=thunk-extern -mharden-sls=all" } */
++/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
++
++extern void (*fptr) (void);
++
++void
++foo (void)
++{
++  fptr ();
++}
++
++/* { dg-final { scan-assembler "jmp\[ \t\]+_?__x86_indirect_thunk_(r|e)ax" } } */
++/* { dg-final { scan-assembler-times "int3" 1 } } */
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/harden-sls-3.c
+@@ -0,0 +1,14 @@
++/* { dg-do compile } */
++/* { dg-options "-O2 -mindirect-branch=thunk -mharden-sls=all" } */
++/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
++
++extern void (*fptr) (void);
++
++void
++foo (void)
++{
++  fptr ();
++}
++
++/* { dg-final { scan-assembler "jmp\[ \t\]+_?__x86_indirect_thunk_(r|e)ax" } } */
++/* { dg-final { scan-assembler-times "int3" 2 } } */
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/harden-sls-4.c
+@@ -0,0 +1,16 @@
++/* { dg-do compile } */
++/* { dg-options "-O2 -mindirect-branch=keep -mharden-sls=all" } */
++/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
++
++extern void (*fptr) (void);
++
++void
++foo (void)
++{
++  fptr ();
++}
++
++/* { dg-final { scan-assembler "jmp\[ \t\]+\\*_?fptr" { target { ! x32 } } } } */
++/* { dg-final { scan-assembler "movl\[ \t\]+fptr\\(%rip\\), %eax" { target x32 } } } */
++/* { dg-final { scan-assembler "jmp\[ \t\]+\\*%rax" { target x32 } } } */
++/* { dg-final { scan-assembler-times "int3" 1 } } */
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/harden-sls-5.c
+@@ -0,0 +1,17 @@
++/* { dg-do compile } */
++/* { dg-options "-O2 -mno-indirect-branch-register -mfunction-return=keep -mindirect-branch=thunk-extern -mharden-sls=return" } */
++/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
++
++typedef void (*dispatch_t)(long offset);
++
++dispatch_t dispatch;
++
++int
++male_indirect_jump (long offset)
++{
++  dispatch(offset);
++  return 0;
++}
++
++/* { dg-final { scan-assembler-times "ret" 1 } } */
++/* { dg-final { scan-assembler-times "int3" 1 } } */
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/indirect-thunk-cs-prefix-1.c
+@@ -0,0 +1,14 @@
++/* { dg-do compile { target { ! ia32 } } } */
++/* { dg-options "-O2 -ffixed-rax -ffixed-rbx -ffixed-rcx -ffixed-rdx -ffixed-rdi -ffixed-rsi -mindirect-branch-cs-prefix -mindirect-branch=thunk-extern" } */
++/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
++
++extern void (*fptr) (void);
++
++void
++foo (void)
++{
++  fptr ();
++}
++
++/* { dg-final { scan-assembler-times "jmp\[ \t\]+_?__x86_indirect_thunk_r\[0-9\]+" 1 } } */
++/* { dg-final { scan-assembler-times "\tcs" 1 } } */
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/indirect-thunk-cs-prefix-2.c
+@@ -0,0 +1,15 @@
++/* { dg-do compile { target { ! ia32 } } } */
++/* { dg-options "-O2 -ffixed-rax -ffixed-rbx -ffixed-rcx -ffixed-rdx -ffixed-rdi -ffixed-rsi -mindirect-branch-cs-prefix -mindirect-branch=thunk-extern" } */
++/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
++
++extern void (*bar) (void);
++
++int
++foo (void)
++{
++  bar ();
++  return 0;
++}
++
++/* { dg-final { scan-assembler-times "call\[ \t\]+_?__x86_indirect_thunk_r\[0-9\]+" 1 } } */
++/* { dg-final { scan-assembler-times "\tcs" 1 } } */

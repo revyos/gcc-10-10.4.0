@@ -1,0 +1,13 @@
+# FIXME: to investigate
+
+--- a/src/configure.ac
++++ b/src/configure.ac
+@@ -3671,6 +3671,8 @@ AC_SUBST(stage2_werror_flag)
+ 
+ compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
+ compare_exclusions="$compare_exclusions | *m2/*/M2Version*\$(objext)"
++compare_exclusions="$compare_exclusions | *m2/gm2version\$(objext)"
++compare_exclusions="$compare_exclusions | gcc/SYSTEM\$(objext)"
+ case "$target" in
+   hppa*64*-*-hpux*) ;;
+   hppa*-*-hpux*) compare_exclusions="$compare_exclusions | */libgcc/lib2funcs* | gcc/function-tests.o" ;;

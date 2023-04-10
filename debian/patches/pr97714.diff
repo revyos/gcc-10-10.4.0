@@ -1,0 +1,36 @@
+# DP: Fix PR rtl-optimization/97714, taken from the trunk.
+
+--- a/src/gcc/final.c
++++ b/src/gcc/final.c
+@@ -3232,12 +3232,11 @@ notice_source_line (rtx_insn *insn, bool
+     {
+       location_t loc = NOTE_MARKER_LOCATION (insn);
+       expanded_location xloc = expand_location (loc);
+-      if (xloc.line == 0)
+-	{
+-	  gcc_checking_assert (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION
+-			       || LOCATION_LOCUS (loc) == BUILTINS_LOCATION);
+-	  return false;
+-	}
++      if (xloc.line == 0
++	  && (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION
++	      || LOCATION_LOCUS (loc) == BUILTINS_LOCATION))
++	return false;
++
+       filename = xloc.file;
+       linenum = xloc.line;
+       columnnum = xloc.column;
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.dg/debug/pr97714.c
+@@ -0,0 +1,11 @@
++/* { dg-do compile } */
++/* { dg-options "-O -g" } */
++
++void
++function ()
++{
++  if (0)
++    {
++#line 0 "whatever"
++    }
++}

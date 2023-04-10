@@ -1,0 +1,165 @@
+# DP: Revert PR c/85678, defaulting to -fno-common again.
+
+gcc/
+
+2019-11-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR85678
+	* common.opt (fcommon): Change init to 1.
+	* doc/invoke.texi (-fcommon): Update documentation.
+
+gcc/testsuite/
+
+2019-11-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR85678
+	* g++.dg/lto/odr-6_1.c: Add -fcommon.
+	* gcc.dg/alias-15.c: Likewise.
+	* gcc.dg/fdata-sections-1.c: Likewise.	
+	* gcc.dg/ipa/pr77653.c: Likewise.
+	* gcc.dg/lto/20090729_0.c: Likewise.
+	* gcc.dg/lto/20111207-1_0.c: Likewise.
+	* gcc.dg/lto/c-compatible-types-1_0.c: Likewise.
+	* gcc.dg/lto/pr55525_0.c: Likewise.
+	* gcc.dg/lto/pr88077_0.c: Use long to avoid alignment warning.
+	* gcc.dg/lto/pr88077_1.c: Add -fcommon.
+	* gcc.target/aarch64/sve/peel_ind_1.c: Allow ANCHOR0.
+	* gcc.target/aarch64/sve/peel_ind_2.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_3.c: Likewise.
+	* gcc.target/i386/volatile-bitfields-2.c: Allow movl or movq.
+
+--- a/src/gcc/common.opt	(revision 278509)
++++ a/src/gcc/common.opt	(revision 278505)
+@@ -1131,7 +1131,7 @@
+ Looks for opportunities to reduce stack adjustments and stack references.
+ 
+ fcommon
+-Common Report Var(flag_no_common,0) Init(1)
++Common Report Var(flag_no_common,0)
+ Put uninitialized globals in the common section.
+ 
+ fcompare-debug
+--- a/src/gcc/testsuite/gcc.target/aarch64/sve/peel_ind_1.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.target/aarch64/sve/peel_ind_1.c	(revision 278505)
+@@ -21,7 +21,7 @@
+ }
+ 
+ /* We should operate on aligned vectors.  */
+-/* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, (x|\.LANCHOR0)\n} } } */
++/* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, x\n} } } */
+ /* We should use an induction that starts at -5, with only the last
+    7 elements of the first iteration being active.  */
+ /* { dg-final { scan-assembler {\tindex\tz[0-9]+\.s, #-5, #5\n} } } */
+--- a/src/gcc/testsuite/gcc.target/aarch64/sve/peel_ind_2.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.target/aarch64/sve/peel_ind_2.c	(revision 278505)
+@@ -17,7 +17,7 @@
+ }
+ 
+ /* We should operate on aligned vectors.  */
+-/* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, (x|\.LANCHOR0)\n} } } */
++/* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, x\n} } } */
+ /* We should unroll the loop three times.  */
+ /* { dg-final { scan-assembler-times "\tst1w\t" 3 } } */
+ /* { dg-final { scan-assembler {\tptrue\t(p[0-9]+)\.s, vl7\n.*\teor\tp[0-7]\.b, (p[0-7])/z, (\1\.b, \2\.b|\2\.b, \1\.b)\n} } } */
+--- a/src/gcc/testsuite/gcc.target/aarch64/sve/peel_ind_3.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.target/aarch64/sve/peel_ind_3.c	(revision 278505)
+@@ -17,5 +17,5 @@
+ }
+ 
+ /* We should operate on aligned vectors.  */
+-/* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, (x|\.LANCHOR0)\n} } } */
++/* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, x\n} } } */
+ /* { dg-final { scan-assembler {\tubfx\t} } } */
+--- a/src/gcc/testsuite/gcc.target/i386/volatile-bitfields-2.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.target/i386/volatile-bitfields-2.c	(revision 278505)
+@@ -14,4 +14,4 @@
+   return bits.b;
+ }
+ 
+-/* { dg-final { scan-assembler "mov(q|l).*bits" } } */
++/* { dg-final { scan-assembler "movl.*bits" } } */
+--- a/src/gcc/testsuite/gcc.dg/fdata-sections-1.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.dg/fdata-sections-1.c	(revision 278505)
+@@ -2,7 +2,7 @@
+ /* Origin: Jonathan Larmour <jifl-bugzilla@jifvik.org> */
+ 
+ /* { dg-do compile { target *-*-linux* *-*-gnu* *-*-uclinux* } } */
+-/* { dg-options "-fcommon -fdata-sections" } */
++/* { dg-options "-fdata-sections" } */
+ 
+ int x;
+ 
+--- a/src/gcc/testsuite/gcc.dg/ipa/pr77653.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.dg/ipa/pr77653.c	(revision 278505)
+@@ -1,5 +1,5 @@
+ /* { dg-require-alias "" } */
+-/* { dg-options "-O2 -fcommon -fdump-ipa-icf-details"  } */
++/* { dg-options "-O2 -fdump-ipa-icf-details"  } */
+ 
+ int a, b, c, d, e, h, i, j, k, l;
+ const int f;
+--- a/src/gcc/testsuite/gcc.dg/alias-15.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.dg/alias-15.c	(revision 278505)
+@@ -1,5 +1,5 @@
+ /* { dg-do compile } */
+-/* { dg-additional-options  "-O2 -fcommon -fdump-ipa-cgraph" } */
++/* { dg-additional-options  "-O2 -fdump-ipa-cgraph" } */
+ 
+ /* RTL-level CSE shouldn't introduce LCO (for the string) into varpool */
+ char *p;
+--- a/src/gcc/testsuite/gcc.dg/lto/c-compatible-types-1_0.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.dg/lto/c-compatible-types-1_0.c	(revision 278505)
+@@ -1,5 +1,5 @@
+ /* { dg-lto-do run } */
+-/* { dg-lto-options { {-O3 -fcommon} {-fcommon} } } */
++/* { dg-lto-options "-O3" } */
+ 
+ /* By C standard Each enumerated type shall be compatible with char, a  signed
+    integer, type, or an unsigned integer type. The choice of type is
+--- a/src/gcc/testsuite/gcc.dg/lto/20090729_0.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.dg/lto/20090729_0.c	(revision 278505)
+@@ -1,4 +1,4 @@
+-/* { dg-lto-options { {-fcommon -w} {-fcommon} } } */
++/* { dg-lto-options "-w" } */
+ 
+ double i;
+ int j;
+--- a/src/gcc/testsuite/gcc.dg/lto/20111207-1_0.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.dg/lto/20111207-1_0.c	(revision 278505)
+@@ -1,4 +1,4 @@
+ /* { dg-lto-do run } */
+-/* { dg-lto-options { { -flto -fcommon } {-fcommon} {-fcommon} {-fcommon} } } */
++/* { dg-lto-options { { -flto } } } */
+ /* { dg-require-linker-plugin "" } */
+ /* { dg-extra-ld-options "-fuse-linker-plugin" } */
+--- a/src/gcc/testsuite/gcc.dg/lto/pr55525_0.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.dg/lto/pr55525_0.c	(revision 278505)
+@@ -1,5 +1,5 @@
+ /* { dg-lto-do link } */
+-/* { dg-lto-options { { -fcommon -flto -w } } } */
++/* { dg-lto-options { { -flto -w } } } */
+ 
+ char s[sizeof (char *)];
+ int main(void)
+--- a/src/gcc/testsuite/gcc.dg/lto/pr88077_0.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.dg/lto/pr88077_0.c	(revision 278505)
+@@ -1,3 +1,3 @@
+ /* { dg-lto-do link } */
+ 
+-long HeaderStr;
++int HeaderStr;
+--- a/src/gcc/testsuite/gcc.dg/lto/pr88077_1.c	(revision 278509)
++++ a/src/gcc/testsuite/gcc.dg/lto/pr88077_1.c	(revision 278505)
+@@ -1,5 +1,3 @@
+-/* { dg-options {-fcommon} } */
+-
+ char HeaderStr[1];
+ 
+ int main()
+--- a/src/gcc/testsuite/g++.dg/lto/odr-6_1.c	(revision 278509)
++++ a/src/gcc/testsuite/g++.dg/lto/odr-6_1.c	(revision 278505)
+@@ -1,4 +1,3 @@
+-/* { dg-options {-fcommon} } */
+ struct {} admbaserest_; // { dg-lto-message "type of " 2 }
+ 
+ 

@@ -1,0 +1,31 @@
+# DP: Define TARGET_OFFLOAD_OPTIONS for AArch64.
+
+--- a/src/gcc/config/aarch64/aarch64.c
++++ b/src/gcc/config/aarch64/aarch64.c
+@@ -23225,6 +23225,16 @@ aarch64_stack_protect_guard (void)
+   return NULL_TREE;
+ }
+ 
++/* Implement the TARGET_OFFLOAD_OPTIONS hook.  */
++static char *
++aarch64_offload_options (void)
++{
++  if (TARGET_ILP32)
++    return xstrdup ("-foffload-abi=ilp32");
++  else
++    return xstrdup ("-foffload-abi=lp64");
++}
++
+ /* Return the diagnostic message string if conversion from FROMTYPE to
+    TOTYPE is not allowed, NULL otherwise.  */
+ 
+@@ -23790,6 +23800,9 @@ aarch64_libgcc_floating_mode_supported_p
+ #undef TARGET_NARROW_VOLATILE_BITFIELD
+ #define TARGET_NARROW_VOLATILE_BITFIELD hook_bool_void_false
+ 
++#undef TARGET_OFFLOAD_OPTIONS
++#define TARGET_OFFLOAD_OPTIONS aarch64_offload_options
++
+ #undef  TARGET_OPTION_OVERRIDE
+ #define TARGET_OPTION_OVERRIDE aarch64_override_options
+ 

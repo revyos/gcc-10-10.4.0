@@ -1,0 +1,14 @@
+# DP: Disable -Werror for libgomp. PR libgomp/90585
+--- a/src/libgomp/configure.ac
++++ b/src/libgomp/configure.ac
+@@ -122,8 +122,9 @@ AC_SUBST(CFLAGS)
+ save_CFLAGS="$CFLAGS"
+ 
+ # Add -Wall -Werror if we are using GCC.
++# FIXME: -Werror fails in the x32 multilib variant
+ if test "x$GCC" = "xyes"; then
+-  XCFLAGS="$XCFLAGS -Wall -Werror"
++  XCFLAGS="$XCFLAGS -Wall"
+ fi
+ 
+ # Find other programs we need.

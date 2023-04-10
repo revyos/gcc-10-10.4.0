@@ -1,0 +1,139 @@
+# DP: i386: Make -march=x86-64-v[234] behave more like other -march= options
+# DP: taken from the trunk (59482fa1e7243bd905c7e27c92ae2b89c79fff87).
+
+--- a/src/gcc/config.gcc
++++ b/src/gcc/config.gcc
+@@ -4529,10 +4529,8 @@ case "${target}" in
+ 					case " $x86_64_archs " in
+ 					*" ${val} "*)
+ 						# Disallow x86-64-v* for --with-cpu=/--with-tune=
+-						# or --with-arch= or --with-arch_32=
+-						# It can be only specified in --with-arch_64=
+ 						case "x$which$val" in
+-						xcpu*x86-64-v*|xtune*x86-64-v*|xarchx86-64-v*|xarch_32x86-64-v*)
++						xcpu*x86-64-v*|xtune*x86-64-v*)
+ 							echo "Unknown CPU given in --with-$which=$val." 1>&2
+ 							exit 1
+ 							;;
+--- a/src/gcc/config/i386/i386-options.c
++++ b/src/gcc/config/i386/i386-options.c
+@@ -2012,17 +2012,6 @@ ix86_option_override_internal (bool main
+ 	    return false;
+ 	  }
+ 
+-	/* The feature-only micro-architecture levels that use
+-	   PTA_NO_TUNE are only defined for the x86-64 psABI.  */
+-	if ((processor_alias_table[i].flags & PTA_NO_TUNE) != 0
+-	    && (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
+-		|| opts->x_ix86_abi != SYSV_ABI))
+-	  {
+-	    error (G_("%<%s%> architecture level is only defined"
+-		      " for the x86-64 psABI"), opts->x_ix86_arch_string);
+-	    return false;
+-	  }
+-
+ 	ix86_schedule = processor_alias_table[i].schedule;
+ 	ix86_arch = processor_alias_table[i].processor;
+ 
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v2-msabi.c
+@@ -0,0 +1,5 @@
++/* { dg-do compile { target lp64 } } */
++/* { dg-options "-mabi=ms -march=x86-64-v2" } */
++
++/* Verify -march=x86-64-v2 works even with -mabi=ms.  */
++#include "x86-64-v2.c"
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v2-other.c
+@@ -0,0 +1,5 @@
++/* { dg-do compile } */
++/* { dg-options "-march=x86-64-v2" } */
++
++/* Verify -march=x86-64-v2 works even with -m32 or -mabi=ms.  */
++#include "x86-64-v2.c"
+--- a/src/gcc/testsuite/gcc.target/i386/x86-64-v2.c
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v2.c
+@@ -12,8 +12,10 @@
+ #ifndef __SSE2__
+ # error __SSE2__ not defined
+ #endif
+-#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+-# error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
++#ifdef __x86_64__
++# ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
++#  error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
++# endif
+ #endif
+ #ifndef __LAHF_SAHF__
+ # error __LAHF_SAHF__ not defined
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v3-msabi.c
+@@ -0,0 +1,5 @@
++/* { dg-do compile { target lp64 } } */
++/* { dg-options "-mabi=ms -march=x86-64-v3" } */
++
++/* Verify -march=x86-64-v3 works even with -mabi=ms.  */
++#include "x86-64-v3.c"
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v3-other.c
+@@ -0,0 +1,5 @@
++/* { dg-do compile } */
++/* { dg-options "-march=x86-64-v3" } */
++
++/* Verify -march=x86-64-v3 works even with -m32 or -mabi=ms.  */
++#include "x86-64-v3.c"
+--- a/src/gcc/testsuite/gcc.target/i386/x86-64-v3.c
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v3.c
+@@ -1,7 +1,7 @@
+ /* { dg-do compile { target { ! ia32 } } } */
+ /* { dg-options "-mabi=sysv -march=x86-64-v3" } */
+ 
+-/* Verify that the CPU features required by x86-64-v4 are enabled.  */
++/* Verify that the CPU features required by x86-64-v3 are enabled.  */
+ 
+ #ifndef __MMX__
+ # error __MMX__ not defined
+@@ -12,8 +12,10 @@
+ #ifndef __SSE2__
+ # error __SSE2__ not defined
+ #endif
+-#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+-# error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
++#ifdef __x86_64__
++# ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
++#  error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
++# endif
+ #endif
+ #ifndef __LAHF_SAHF__
+ # error __LAHF_SAHF__ not defined
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v4-msabi.c
+@@ -0,0 +1,5 @@
++/* { dg-do compile { target lp64 } } */
++/* { dg-options "-mabi=ms -march=x86-64-v4" } */
++
++/* Verify -march=x86-64-v4 works even with -mabi=ms.  */
++#include "x86-64-v4.c"
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v4-other.c
+@@ -0,0 +1,5 @@
++/* { dg-do compile } */
++/* { dg-options "-march=x86-64-v4" } */
++
++/* Verify -march=x86-64-v4 works even with -m32 or -mabi=ms.  */
++#include "x86-64-v4.c"
+--- a/src/gcc/testsuite/gcc.target/i386/x86-64-v4.c
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v4.c
+@@ -12,8 +12,10 @@
+ #ifndef __SSE2__
+ # error __SSE2__ not defined
+ #endif
+-#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+-# error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
++#ifdef __x86_64__
++# ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
++#  error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
++# endif
+ #endif
+ #ifndef __LAHF_SAHF__
+ # error __LAHF_SAHF__ not defined

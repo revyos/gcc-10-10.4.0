@@ -1,0 +1,46 @@
+--- a/src/gcc/m2/Make-lang.in
++++ b/src/gcc/m2/Make-lang.in
+@@ -585,7 +585,7 @@ gm2m$(exeext): stage1/gm2/gm2m$(exeext)
+ 
+ stage3/gm2/cc1gm2$(exeext): stage2/gm2/cc1gm2$(exeext) gm2/gm2-compiler-paranoid/m2flex.o \
+                             $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS_PARANOID)
+-	$(LINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) gm2/gm2-compiler-paranoid/m2flex.o \
++	$(LINKER) $(ALL_CFLAGS) $(LDFLAGS) -fno-lto -o $@ $(GM2_C_OBJS) gm2/gm2-compiler-paranoid/m2flex.o \
+                             attribs.o \
+                               $(GM2_LIBS_PARANOID) \
+                               $(BACKEND) $(LIBS) \
+@@ -593,7 +593,7 @@ stage3/gm2/cc1gm2$(exeext): stage2/gm2/c
+ 
+ stage2/gm2/cc1gm2$(exeext): stage1/gm2/cc1gm2$(exeext) gm2/gm2-compiler/m2flex.o $(P) \
+                             $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS)
+-	$(LINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) gm2/gm2-compiler/m2flex.o \
++	$(LINKER) $(ALL_CFLAGS) $(LDFLAGS) -fno-lto -o $@ $(GM2_C_OBJS) gm2/gm2-compiler/m2flex.o \
+                             attribs.o \
+                               $(GM2_LIBS) \
+                               $(BACKEND) $(LIBS) \
+@@ -603,7 +603,7 @@ stage1/gm2/cc1gm2$(exeext): gm2/gm2-comp
+                             $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
+                             $(GM2_LIBS_BOOT) $(MC_LIBS)
+ 	$(__BREAKPOINT)
+-	$(LINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) gm2/gm2-compiler-boot/m2flex.o \
++	$(LINKER) $(ALL_CFLAGS) $(LDFLAGS) -fno-lto -o $@ $(GM2_C_OBJS) gm2/gm2-compiler-boot/m2flex.o \
+                             attribs.o \
+                              $(GM2_LIBS_BOOT) $(MC_LIBS) \
+                              $(BACKEND) $(LIBS) $(BACKENDLIBS)
+--- a/src/config/bootstrap-lto-lean.mk
++++ b/src/config/bootstrap-lto-lean.mk
+@@ -1,10 +1,10 @@
+ # This option enables LTO for stage4 and LTO for generators in stage3 with profiledbootstrap.
+ # Otherwise, LTO is used in only stage3.
+ 
+-STAGE3_CFLAGS += -flto=jobserver
+-override STAGEtrain_CFLAGS := $(filter-out -flto=jobserver,$(STAGEtrain_CFLAGS))
+-STAGEtrain_GENERATOR_CFLAGS += -flto=jobserver
+-STAGEfeedback_CFLAGS += -flto=jobserver
++STAGE3_CFLAGS += -flto=jobserver -ffat-lto-objects
++override STAGEtrain_CFLAGS := $(filter-out -flto=jobserver -ffat-lto-objects,$(STAGEtrain_CFLAGS))
++STAGEtrain_GENERATOR_CFLAGS += -flto=jobserver -ffat-lto-objects
++STAGEfeedback_CFLAGS += -flto=jobserver -ffat-lto-objects
+ 
+ # assumes the host supports the linker plugin
+ LTO_AR = $$r/$(HOST_SUBDIR)/prev-gcc/gcc-ar$(exeext) -B$$r/$(HOST_SUBDIR)/prev-gcc/

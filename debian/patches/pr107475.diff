@@ -1,0 +1,15 @@
+# DP: The fix for PR ada/103538 leads to a build failure on x32
+# DP: not having the dladdr linked in on x32 with older glibc version
+# DP: where this symbol is still in libdl.so. Just link with -ldl.
+
+--- a/src/gcc/ada/gcc-interface/Makefile.in
++++ b/src/gcc/ada/gcc-interface/Makefile.in
+@@ -697,7 +697,7 @@
+ 		$(LDFLAGS) \
+ 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
+ 		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
+-		$(MISCLIB) -lm
++		$(MISCLIB) -lm -ldl
+ 	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
+                 | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared $(GNATLIBCFLAGS) \
+ 		$(PICFLAG_FOR_TARGET) \

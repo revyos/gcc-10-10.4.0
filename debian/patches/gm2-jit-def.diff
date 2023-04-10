@@ -1,0 +1,19 @@
+# DP: gm2: Define lang_register_spec_functions for jit.
+
+2020-03-23  Matthias Klose  <doko@ubuntu.com>
+
+        * jit-spec.c (lang_register_spec_functions): New, not used for jit.
+
+
+--- a/src/gcc/jit/jit-spec.c
++++ b/src/gcc/jit/jit-spec.c
+@@ -39,3 +39,9 @@ lang_specific_pre_link (void)
+ 
+ /* Number of extra output files that lang_specific_pre_link may generate.  */
+ int lang_specific_extra_outfiles = 0;  /* Not used for jit.  */
++
++/* lang_register_spec_functions.  Not used for jit.  */
++void
++lang_register_spec_functions (void)
++{
++}

@@ -1,0 +1,44 @@
+# DP: Fix PR target/98274, -march=x86-64-v[234] vs. target attribute, taken
+# DP: from the trunk (69bd5d473d22157d0737fc20e98eb3347cbd6ab5).
+
+--- a/src/gcc/config/i386/i386-options.c
++++ b/src/gcc/config/i386/i386-options.c
+@@ -1812,9 +1812,7 @@ ix86_option_override_internal (bool main
+ 	     as -mtune=generic.  With native compilers we won't see the
+ 	     -mtune=native, as it was changed by the driver.  */
+       if (!strcmp (opts->x_ix86_tune_string, "native"))
+-	{
+-	  opts->x_ix86_tune_string = "generic";
+-	}
++	opts->x_ix86_tune_string = "generic";
+       else if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
+         warning (OPT_Wdeprecated,
+ 		 main_args_p
+@@ -1836,10 +1834,12 @@ ix86_option_override_internal (bool main
+ 
+       /* opts->x_ix86_tune_string is set to opts->x_ix86_arch_string
+ 	 or defaulted.  We need to use a sensible tune option.  */
+-      if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
+-	{
+-	  opts->x_ix86_tune_string = "generic";
+-	}
++      if (!strncmp (opts->x_ix86_tune_string, "x86-64", 6)
++	  && (opts->x_ix86_tune_string[6] == '\0'
++	      || (!strcmp (opts->x_ix86_tune_string + 6, "-v2")
++		  || !strcmp (opts->x_ix86_tune_string + 6, "-v3")
++		  || !strcmp (opts->x_ix86_tune_string + 6, "-v4"))))
++	opts->x_ix86_tune_string = "generic";
+     }
+ 
+   if (opts->x_ix86_stringop_alg == rep_prefix_8_byte
+--- /dev/null
++++ b/src/gcc/testsuite/gcc.target/i386/pr98274.c
+@@ -0,0 +1,8 @@
++/* PR target/98274 */
++/* { dg-do compile { target lp64 } } */
++/* { dg-options "-mabi=sysv -O2 -march=x86-64-v2" } */
++
++void __attribute__((target ("avx")))
++foo (void)
++{
++}

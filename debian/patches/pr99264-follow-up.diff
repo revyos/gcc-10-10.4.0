@@ -1,0 +1,25 @@
+# DP: Ada: Keep the alternate stack size at 16 * 1024
+# DP: See https://gcc.gnu.org/pipermail/gcc-patches/2021-March/566674.html
+
+--- a/src/gcc/ada/init.c
++++ b/src/gcc/ada/init.c
+@@ -579,7 +579,7 @@ __gnat_error_handler (int sig, siginfo_t
+ #ifndef __ia64__
+ #define HAVE_GNAT_ALTERNATE_STACK 1
+ /* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
+-char __gnat_alternate_stack[32 * 1024];
++char __gnat_alternate_stack[16 * 1024];
+ #endif
+ 
+ #ifdef __XENO__
+--- a/src/gcc/ada/libgnarl/s-osinte__linux.ads
++++ b/src/gcc/ada/libgnarl/s-osinte__linux.ads
+@@ -330,7 +330,7 @@ package System.OS_Interface is
+    pragma Import (C, Alternate_Stack, "__gnat_alternate_stack");
+    --  The alternate signal stack for stack overflows
+ 
+-   Alternate_Stack_Size : constant := 32 * 1024;
++   Alternate_Stack_Size : constant := 16 * 1024;
+    --  This must be in keeping with init.c:__gnat_alternate_stack
+ 
+    function Get_Stack_Base (thread : pthread_t) return Address;

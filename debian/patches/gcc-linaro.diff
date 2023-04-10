@@ -1,0 +1,9 @@
+# DP: Changes for the Linaro 8-2018.xx snapshot.
+
+MSG=$(git log origin/linaro/gcc-8-branch --format=format:"%s" -n 1 --grep "Merge branches"); SVN=${MSG##* }; git log origin/gcc-7-branch --format=format:"%H" -n 1 --grep "gcc-7-branch@${SVN%.}"
+
+LANG=C git diff --no-renames bb85d61e6bfbadee4494e034a5d8187cf0626aed 1604249e382610b087a72d0d07103f815458cec0 \
+ | egrep -v '^(diff|index) ' \
+ | filterdiff --strip=1 --addoldprefix=a/src/  --addnewprefix=b/src/ \
+ | sed 's,a/src//dev/null,/dev/null,'
+

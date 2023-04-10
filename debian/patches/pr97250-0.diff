@@ -1,0 +1,21 @@
+#DP: Backport prerequiste patch for PR target/97250
+
+    i386: Define __LAHF_SAHF__ and __MOVBE__ macros, based on ISA flags
+    
+    gcc/
+            * config/i386/i386-c.c (ix86_target_macros_internal): Define
+            __LAHF_SAHF__ and __MOVBE__ based on ISA flags.
+
+--- a/src/gcc/config/i386/i386-c.c
++++ b/src/gcc/config/i386/i386-c.c
+@@ -576,6 +576,10 @@ ix86_target_macros_internal (HOST_WIDE_I
+     def_or_undef (parse_in, "__MMX_WITH_SSE__");
+   if (isa_flag2 & OPTION_MASK_ISA2_ENQCMD)
+     def_or_undef (parse_in, "__ENQCMD__");
++  if (isa_flag & OPTION_MASK_ISA_SAHF)
++    def_or_undef (parse_in, "__LAHF_SAHF__");
++  if (isa_flag2 & OPTION_MASK_ISA2_MOVBE)
++    def_or_undef (parse_in, "__MOVBE__");
+   if (TARGET_IAMCU)
+     {
+       def_or_undef (parse_in, "__iamcu");

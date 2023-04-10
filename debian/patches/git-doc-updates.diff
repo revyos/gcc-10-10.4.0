@@ -1,0 +1,50 @@
+# DP: updates from the gcc-10 branch upto 20230102 (documentation).
+
+LANG=C git diff --no-renames --src-prefix=a/src/ --dst-prefix=b/src/ \
+	7ff47281ce4f3699185b06a3430968eac2a5b0c6 835b7595722f47654cba4402cf1fe6a02492f933 \
+	| awk '/^diff .*\.texi/ {skip=0; print; next} /^diff / {skip=1; next} skip==0' \
+        | grep -v -E '^(diff|index)'
+
+--- a/src/gcc/d/gdc.texi
++++ b/src/gcc/d/gdc.texi
+@@ -633,9 +633,11 @@ Give deprecation messages about @option{-ftransition=import} anomalies.
+ @item complex
+ List all usages of complex or imaginary types.
+ @item dip1000
+-Implements @uref{http://wiki.dlang.org/DIP1000} (experimental).
++Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/other/DIP1000.md}
++(Scoped pointers).
+ @item dip25
+-Implements @uref{http://wiki.dlang.org/DIP25} (experimental).
++Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/archive/DIP25.md}
++(Sealed references).
+ @item field
+ List all non-mutable fields which occupy an object instance.
+ @item import
+--- a/src/gcc/doc/cppopts.texi
++++ b/src/gcc/doc/cppopts.texi
+@@ -314,9 +314,10 @@ supported by the system's @code{iconv} library routine.
+ @opindex fwide-exec-charset
+ @cindex character set, wide execution
+ Set the wide execution character set, used for wide string and
+-character constants.  The default is UTF-32 or UTF-16, whichever
+-corresponds to the width of @code{wchar_t}.  As with
+-@option{-fexec-charset}, @var{charset} can be any encoding supported
++character constants.  The default is one of UTF-32BE, UTF-32LE, UTF-16BE,
++or UTF-16LE, whichever corresponds to the width of @code{wchar_t} and the
++big-endian or little-endian byte order being used for code generation.  As
++with @option{-fexec-charset}, @var{charset} can be any encoding supported
+ by the system's @code{iconv} library routine; however, you will have
+ problems with encodings that do not fit exactly in @code{wchar_t}.
+ 
+--- a/src/gcc/doc/invoke.texi
++++ b/src/gcc/doc/invoke.texi
+@@ -16999,7 +16999,7 @@ performance of the code.  Permissible values for this option are:
+ @samp{cortex-a65}, @samp{cortex-a65ae}, @samp{cortex-a34},
+ @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
+ @samp{neoverse-e1}, @samp{neoverse-n1}, @samp{neoverse-n2},
+-@samp{neoverse-v1}, @samp{neoverse-512tvb}, @samp{qdf24xx},
++@samp{neoverse-v1}, @samp{neoverse-v2}, @samp{neoverse-512tvb}, @samp{qdf24xx},
+ @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{octeontx},
+ @samp{octeontx81},  @samp{octeontx83},
+ @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}

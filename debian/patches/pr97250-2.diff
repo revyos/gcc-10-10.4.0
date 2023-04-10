@@ -1,0 +1,51 @@
+# DP: Backport PR target/97250: Add support for x86-64-v2, x86-64-v3, x86-64-v4 levels for x86-64
+# DP: 16664e6e4fb4281be6477c13989740d44c963c77
+
+    x86-64: Check CMPXCHG16B for x86-64-v[234]
+    
+    x86-64-v2 includes CMPXCHG16B.  Since -mcx16 enables CMPXCHG16B and
+    defines __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16, check it in x86-64-v[234]
+    tests.
+    
+            PR target/97250
+            * gcc.target/i386/x86-64-v2.c: Verify that
+            __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 is defined.
+            * gcc.target/i386/x86-64-v3.c: Likewise.
+            * gcc.target/i386/x86-64-v4.c: Likewise.
+
+--- a/src/gcc/testsuite/gcc.target/i386/x86-64-v2.c
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v2.c
+@@ -12,6 +12,9 @@
+ #ifndef __SSE2__
+ # error __SSE2__ not defined
+ #endif
++#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
++# error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
++#endif
+ #ifndef __LAHF_SAHF__
+ # error __LAHF_SAHF__ not defined
+ #endif
+--- a/src/gcc/testsuite/gcc.target/i386/x86-64-v3.c
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v3.c
+@@ -12,6 +12,9 @@
+ #ifndef __SSE2__
+ # error __SSE2__ not defined
+ #endif
++#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
++# error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
++#endif
+ #ifndef __LAHF_SAHF__
+ # error __LAHF_SAHF__ not defined
+ #endif
+--- a/src/gcc/testsuite/gcc.target/i386/x86-64-v4.c
++++ b/src/gcc/testsuite/gcc.target/i386/x86-64-v4.c
+@@ -12,6 +12,9 @@
+ #ifndef __SSE2__
+ # error __SSE2__ not defined
+ #endif
++#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
++# error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
++#endif
+ #ifndef __LAHF_SAHF__
+ # error __LAHF_SAHF__ not defined
+ #endif

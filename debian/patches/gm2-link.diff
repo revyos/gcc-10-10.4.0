@@ -1,0 +1,31 @@
+# DP: Fix parallel linking of cc1gm2.
+
+--- a/src/gcc/m2/Make-lang.in
++++ b/src/gcc/m2/Make-lang.in
+@@ -551,7 +551,7 @@
+ stage3/m2/cc1gm2$(exeext): stage2/m2/cc1gm2$(exeext) m2/gm2-compiler-paranoid/m2flex.o \
+                             $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS_PARANOID) \
+                             m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so
+-	$(LINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler-paranoid/m2flex.o \
++	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler-paranoid/m2flex.o \
+                             attribs.o \
+                               $(GM2_LIBS_PARANOID) \
+                               $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o \
+@@ -560,7 +560,7 @@
+ stage2/m2/cc1gm2$(exeext): stage1/m2/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(P) \
+                             $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS) \
+                             m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so
+-	$(LINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler/m2flex.o \
++	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler/m2flex.o \
+                             attribs.o \
+                               $(GM2_LIBS) \
+                               $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o \
+@@ -570,7 +570,7 @@
+                             $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
+                             $(GM2_LIBS_BOOT) $(MC_LIBS) \
+                             m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so
+-	$(LINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler-boot/m2flex.o \
++	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler-boot/m2flex.o \
+                             attribs.o \
+                              $(GM2_LIBS_BOOT) $(MC_LIBS) m2/gm2-gcc/rtegraph.o \
+                              $(BACKEND) $(LIBS) $(BACKENDLIBS)
