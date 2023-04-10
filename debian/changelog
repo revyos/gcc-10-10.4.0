@@ -1,3 +1,9 @@
+gcc-10 (10.4.0-7revyos1) unstable; urgency=medium
+
+  * Use thead gcc source
+
+ -- Han Gao <gaohan@iscas.ac.cn>  Mon, 10 Apr 2023 16:33:03 +0800
+
 gcc-10 (10.4.0-7) unstable; urgency=medium
 
   * Update to git 20230110 from the gcc-10 branch.
