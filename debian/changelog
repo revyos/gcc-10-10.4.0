@@ -1,8 +1,9 @@
 gcc-10 (10.4.0-7revyos1) unstable; urgency=medium
 
+  [ Han Gao ]
   * Use thead gcc source
 
- -- Han Gao <gaohan@iscas.ac.cn>  Mon, 10 Apr 2023 16:33:03 +0800
+ -- Han Gao <gaohan@iscas.ac.cn>  Fri, 21 Apr 2023 17:48:35 +0800
 
 gcc-10 (10.4.0-7) unstable; urgency=medium
 
