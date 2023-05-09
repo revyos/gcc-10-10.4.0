@@ -1,0 +1,32 @@
+diff -uNr gcc-10-10.4.0.orig/src/libcpp/configure gcc-10-10.4.0/src/libcpp/configure
+--- gcc-10-10.4.0.orig/src/libcpp/configure	2023-05-05 00:12:48.000000000 +0800
++++ gcc-10-10.4.0/src/libcpp/configure	2023-05-05 12:56:55.518371101 +0800
+@@ -5738,17 +5738,6 @@
+ fi
+ 
+ 
+-ac_fn_c_check_type "$LINENO" "ptrdiff_t" "ac_cv_type_ptrdiff_t" "$ac_includes_default"
+-if test "x$ac_cv_type_ptrdiff_t" = xyes; then :
+-
+-else
+-
+-cat >>confdefs.h <<_ACEOF
+-#define ptrdiff_t int
+-_ACEOF
+-
+-fi
+-
+ ac_fn_c_find_uintX_t "$LINENO" "64" "ac_cv_c_uint64_t"
+ case $ac_cv_c_uint64_t in #(
+   no|yes) ;; #(
+diff -uNr gcc-10-10.4.0.orig/src/libcpp/configure.ac gcc-10-10.4.0/src/libcpp/configure.ac
+--- gcc-10-10.4.0.orig/src/libcpp/configure.ac	2023-05-05 00:12:48.000000000 +0800
++++ gcc-10-10.4.0/src/libcpp/configure.ac	2023-05-05 12:57:12.439019772 +0800
+@@ -62,7 +62,6 @@
+ AC_TYPE_SIZE_T
+ AC_TYPE_SSIZE_T
+ AC_TYPE_UINTPTR_T
+-AC_CHECK_TYPE(ptrdiff_t, int)
+ AC_TYPE_UINT64_T
+ if test x"$ac_cv_c_uint64_t" = x"no"; then
+   AC_MSG_ERROR([uint64_t not found])

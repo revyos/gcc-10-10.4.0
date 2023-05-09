@@ -272,6 +272,9 @@ debian_patches += go-testsuite
 # Mostly for Ada, but not only (bootstrap-no-unneeded-libs).
 debian_patches += ada-changes-in-autogen-output
 
+# revyos patch
+debian_patches += remove-ptrdiff-in-libcpp
+
 series_stamp = $(stampdir)/02-series-stamp
 series: $(series_stamp)
 $(series_stamp):

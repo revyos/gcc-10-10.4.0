@@ -1,3 +1,9 @@
+gcc-10 (10.4.0-7revyos2) unstable; urgency=medium
+
+  * Use thead arch rv64gcv0p7_zfh_xtheadc
+
+ -- Han Gao <gaohan@iscas.ac.cn>  Sun, 23 Apr 2023 18:09:34 +0800
+
 gcc-10 (10.4.0-7revyos1) unstable; urgency=medium
 
   [ Han Gao ]
